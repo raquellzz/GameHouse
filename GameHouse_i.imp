@@ -1,0 +1,559 @@
+IMPLEMENTATION
+    GameHouse_i
+REFINES
+    GameHouse
+
+VALUES
+    MAX_TIPOS_DISPOSITIVO = 5;
+    MAX_DISPOSITIVOS = 12;
+    MAX_JOGOS = 35;
+    MAX_CLIENTES = 30;
+    MAX_JOGOS_POR_DISPOSITIVO = 5;
+    MAX_SESSOES = 12;
+    MAX_ENTRADAS_FILA = 7;
+    MAX_CREDITOS = 3;
+    TIPOS_DISPOSITIVO = 1..MAX_TIPOS_DISPOSITIVO;
+    DISPOSITIVOS = 1..MAX_DISPOSITIVOS;
+    JOGOS = 1..MAX_JOGOS;
+    CLIENTES = 1..MAX_CLIENTES
+CONCRETE_VARIABLES
+    tiposDispositivos_arr, tiposDispositivos_hwm,
+    dispositivos_arr, tipoDispositivo_arr, statusDispositivo_arr, dispositivos_hwm,
+    jogos_arr, tipoJogo_arr, jogos_hwm,
+    jogosDispositivo_d_arr, jogosDispositivo_j_arr, jogosDispositivo_hwm,
+    clientes_arr, statusCliente_arr, creditosCliente_arr, clientes_hwm,
+    sessao_c_arr, sessao_d_arr, sessao_j_arr, sessao_hwm,
+    fila_d_arr, fila_c_arr, fila_j_arr, fila_hwm
+
+INVARIANT
+    /* Tipos Concretos */
+    tiposDispositivos_hwm : 0..MAX_TIPOS_DISPOSITIVO &
+    tiposDispositivos_arr : 1..MAX_TIPOS_DISPOSITIVO --> INTEGER & /* CORRIGIDO */
+
+    dispositivos_hwm : 0..MAX_DISPOSITIVOS &
+    dispositivos_arr : 1..MAX_DISPOSITIVOS --> INTEGER &      /* CORRIGIDO */
+    tipoDispositivo_arr : 1..MAX_DISPOSITIVOS --> INTEGER & /* CORRIGIDO */
+    statusDispositivo_arr : 1..MAX_DISPOSITIVOS --> STATUS_DISPOSITIVO & /* OK (Tipo enumerado) */
+
+    jogos_hwm : 0..MAX_JOGOS &
+    jogos_arr : 1..MAX_JOGOS --> INTEGER &             /* CORRIGIDO */
+    tipoJogo_arr : 1..MAX_JOGOS --> INTEGER &          /* CORRIGIDO */
+
+    jogosDispositivo_hwm : 0..MAX_JOGOS_POR_DISPOSITIVO &
+    jogosDispositivo_d_arr : 1..MAX_JOGOS_POR_DISPOSITIVO --> INTEGER & /* CORRIGIDO */
+    jogosDispositivo_j_arr : 1..MAX_JOGOS_POR_DISPOSITIVO --> INTEGER & /* CORRIGIDO */
+
+    clientes_hwm : 0..MAX_CLIENTES &
+    clientes_arr : 1..MAX_CLIENTES --> INTEGER &          /* CORRIGIDO */
+    statusCliente_arr : 1..MAX_CLIENTES --> STATUS_CLIENTE & /* OK (Tipo enumerado) */
+    creditosCliente_arr : 1..MAX_CLIENTES --> NAT &       /* CORRIGIDO */
+
+    sessao_hwm : 0..MAX_SESSOES &
+    sessao_c_arr : 1..MAX_SESSOES --> INTEGER &          /* CORRIGIDO */
+    sessao_d_arr : 1..MAX_SESSOES --> INTEGER &          /* CORRIGIDO */
+    sessao_j_arr : 1..MAX_SESSOES --> INTEGER &          /* CORRIGIDO */
+
+    fila_hwm : 0..MAX_ENTRADAS_FILA &
+    fila_d_arr : 1..MAX_ENTRADAS_FILA --> INTEGER &      /* CORRIGIDO */
+    fila_c_arr : 1..MAX_ENTRADAS_FILA --> INTEGER &      /* CORRIGIDO */
+    fila_j_arr : 1..MAX_ENTRADAS_FILA --> INTEGER &      /* CORRIGIDO */
+
+    /* Invariante de Ligação */
+    tiposDispositivos = tiposDispositivos_arr[1..tiposDispositivos_hwm] &
+    dispositivos = dispositivos_arr[1..dispositivos_hwm] &
+    jogos = jogos_arr[1..jogos_hwm] &
+    clientes = clientes_arr[1..clientes_hwm] &
+
+    tipoDispositivo = %ii.(ii:1..dispositivos_hwm | dispositivos_arr(ii) |-> tipoDispositivo_arr(ii)) &
+    statusDispositivo = %ii.(ii:1..dispositivos_hwm | dispositivos_arr(ii) |-> statusDispositivo_arr(ii)) &
+    tipoJogo = %ii.(ii:1..jogos_hwm | jogos_arr(ii) |-> tipoJogo_arr(ii)) &
+    statusCliente = %ii.(ii:1..clientes_hwm | clientes_arr(ii) |-> statusCliente_arr(ii)) &
+    creditosCliente = %ii.(ii:1..clientes_hwm | clientes_arr(ii) |-> creditosCliente_arr(ii)) &
+
+    jogosDispositivo = %ii.(ii:1..jogosDispositivo_hwm | jogosDispositivo_d_arr(ii) |-> jogosDispositivo_j_arr(ii)) &
+    sessao = %ii.(ii:1..sessao_hwm | sessao_c_arr(ii) |-> sessao_d_arr(ii)) &
+    jogoAtual = %ii.(ii:1..sessao_hwm | (sessao_c_arr(ii) |-> sessao_d_arr(ii)) |-> sessao_j_arr(ii)) &
+
+    !dd.(dd:dispositivos => filaDispositivo(dd) = conc(%ii.(ii:1..fila_hwm & fila_d_arr(ii) = dd | [fila_c_arr(ii)]))) &
+    jogoSolicitado = %ii.(ii:1..fila_hwm | fila_c_arr(ii) |-> fila_j_arr(ii))
+    
+
+    
+INITIALISATION
+    tiposDispositivos_hwm := 0;
+    dispositivos_hwm := 0;
+    jogos_hwm := 0;
+    jogosDispositivo_hwm := 0;
+    clientes_hwm := 0;
+    sessao_hwm := 0;
+    fila_hwm := 0;
+
+    /* 2. Inicializa os ARRAYS com valores padrão para satisfazer a regra de que */
+    /* variáveis concretas devem ser inicializadas como funções totais. */
+    tiposDispositivos_arr := (1..MAX_TIPOS_DISPOSITIVO) * {1}; /* Usa 1 como tipo de dispositivo padrão */
+    dispositivos_arr      := (1..MAX_DISPOSITIVOS) * {1};      /* Usa 1 como ID de dispositivo padrão */
+    tipoDispositivo_arr   := (1..MAX_DISPOSITIVOS) * {1};
+    statusDispositivo_arr := (1..MAX_DISPOSITIVOS) * {disponivel};
+    jogos_arr             := (1..MAX_JOGOS) * {1};             /* Usa 1 como ID de jogo padrão */
+    tipoJogo_arr          := (1..MAX_JOGOS) * {1};
+    jogosDispositivo_d_arr := (1..MAX_JOGOS_POR_DISPOSITIVO) * {1};
+    jogosDispositivo_j_arr := (1..MAX_JOGOS_POR_DISPOSITIVO) * {1};
+    clientes_arr          := (1..MAX_CLIENTES) * {1};          /* Usa 1 como ID de cliente padrão */
+    statusCliente_arr     := (1..MAX_CLIENTES) * {inativo};
+    creditosCliente_arr   := (1..MAX_CLIENTES) * {0};
+    sessao_c_arr          := (1..MAX_SESSOES) * {1};
+    sessao_d_arr          := (1..MAX_SESSOES) * {1};
+    sessao_j_arr          := (1..MAX_SESSOES) * {1};
+    fila_d_arr            := (1..MAX_ENTRADAS_FILA) * {1};
+    fila_c_arr            := (1..MAX_ENTRADAS_FILA) * {1};
+    fila_j_arr            := (1..MAX_ENTRADAS_FILA) * {1}
+
+LOCAL_OPERATIONS
+    idx <-- find_cliente_idx(cc) =
+        PRE cc : CLIENTES & cc : ran(clientes_arr[1..clientes_hwm])
+        THEN
+            ANY ii WHERE ii : 1..clientes_hwm & clientes_arr(ii) = cc
+            THEN idx := ii
+            END
+        END;
+    idx <-- find_dispositivo_idx(dd) =
+        PRE dd : DISPOSITIVOS & dd : ran(dispositivos_arr[1..dispositivos_hwm])
+        THEN
+            ANY ii WHERE ii : 1..dispositivos_hwm & dispositivos_arr(ii) = dd
+            THEN idx := ii
+            END
+        END;
+    idx <-- find_fila_idx(cc, dd) =
+        PRE cc:CLIENTES & dd:DISPOSITIVOS
+        THEN
+            ANY ii WHERE ii : 1..fila_hwm & fila_c_arr(ii) = cc & fila_d_arr(ii) = dd
+            THEN idx := ii
+            END
+        END;
+    idx <-- find_sessao_idx_by_client(cc) =
+        PRE cc:CLIENTES & cc : ran(sessao_c_arr[1..sessao_hwm])
+        THEN
+            ANY ii WHERE ii: 1..sessao_hwm & sessao_c_arr(ii) = cc
+            THEN idx := ii
+            END
+        END
+
+
+OPERATIONS
+
+    add_tipo_dispositivo(td) =
+    BEGIN
+        tiposDispositivos_hwm := tiposDispositivos_hwm + 1;
+        tiposDispositivos_arr(tiposDispositivos_hwm) := td
+    END;
+
+    remove_tipo_dispositivo(td) =
+    VAR idx, ii IN
+        idx := 0; ii := 1;
+        WHILE ii <= tiposDispositivos_hwm & idx = 0 DO
+            IF tiposDispositivos_arr(ii) = td THEN idx := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..tiposDispositivos_hwm + 1 & idx : 0..tiposDispositivos_hwm
+        VARIANT tiposDispositivos_hwm - ii + 1
+        END;
+        tiposDispositivos_arr(idx) := tiposDispositivos_arr(tiposDispositivos_hwm);
+        tiposDispositivos_hwm := tiposDispositivos_hwm - 1
+    END;
+
+    add_dispositivo(dd, td) =
+    BEGIN
+        dispositivos_hwm := dispositivos_hwm + 1;
+        dispositivos_arr(dispositivos_hwm) := dd;
+        tipoDispositivo_arr(dispositivos_hwm) := td;
+        statusDispositivo_arr(dispositivos_hwm) := disponivel
+    END;
+
+    remove_dispositivo(dd) =
+    VAR idx, ii, jj IN
+        /* 1. Encontrar e remover o dispositivo */
+        idx := 0; ii := 1;
+        WHILE ii <= dispositivos_hwm & idx = 0 DO
+            IF dispositivos_arr(ii) = dd THEN idx := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..dispositivos_hwm + 1 & idx : 0..dispositivos_hwm
+        VARIANT dispositivos_hwm - ii + 1
+        END;
+        dispositivos_arr(idx) := dispositivos_arr(dispositivos_hwm);
+        tipoDispositivo_arr(idx) := tipoDispositivo_arr(dispositivos_hwm);
+        statusDispositivo_arr(idx) := statusDispositivo_arr(dispositivos_hwm);
+        dispositivos_hwm := dispositivos_hwm - 1;
+
+        /* 2. Remover todas as instalações de jogos nesse dispositivo */
+        jj := 1;
+        WHILE jj <= jogosDispositivo_hwm DO
+            IF jogosDispositivo_d_arr(jj) = dd THEN
+                jogosDispositivo_d_arr(jj) := jogosDispositivo_d_arr(jogosDispositivo_hwm);
+                jogosDispositivo_j_arr(jj) := jogosDispositivo_j_arr(jogosDispositivo_hwm);
+                jogosDispositivo_hwm := jogosDispositivo_hwm - 1
+                /* Não incrementa jj, pois o novo elemento em jj precisa ser verificado */
+            ELSE
+                jj := jj + 1
+            END
+        INVARIANT jj : 1..jogosDispositivo_hwm + 1
+        VARIANT jogosDispositivo_hwm - jj + 1
+        END
+    END;
+
+    add_jogo(jj, td) =
+    BEGIN
+        jogos_hwm := jogos_hwm + 1;
+        jogos_arr(jogos_hwm) := jj;
+        tipoJogo_arr(jogos_hwm) := td
+    END;
+
+    remove_jogo(jj) =
+    VAR idx, ii, kk IN
+        /* 1. Encontrar e remover o jogo da lista principal */
+        idx := 0; ii := 1;
+        WHILE ii <= jogos_hwm & idx = 0 DO
+            IF jogos_arr(ii) = jj THEN idx := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..jogos_hwm+1 & idx : 0..jogos_hwm
+        VARIANT jogos_hwm - ii + 1
+        END;
+        jogos_arr(idx) := jogos_arr(jogos_hwm);
+        tipoJogo_arr(idx) := tipoJogo_arr(jogos_hwm);
+        jogos_hwm := jogos_hwm - 1;
+        
+        /* 2. Remover todas as instalações desse jogo */
+        kk := 1;
+        WHILE kk <= jogosDispositivo_hwm DO
+            IF jogosDispositivo_j_arr(kk) = jj THEN
+                jogosDispositivo_d_arr(kk) := jogosDispositivo_d_arr(jogosDispositivo_hwm);
+                jogosDispositivo_j_arr(kk) := jogosDispositivo_j_arr(jogosDispositivo_hwm);
+                jogosDispositivo_hwm := jogosDispositivo_hwm - 1
+            ELSE
+                kk := kk + 1
+            END
+        INVARIANT kk : 1..jogosDispositivo_hwm + 1
+        VARIANT jogosDispositivo_hwm - kk + 1
+        END
+    END;
+
+    instalar_jogo(dd, jj) =
+    BEGIN
+        jogosDispositivo_hwm := jogosDispositivo_hwm + 1;
+        jogosDispositivo_d_arr(jogosDispositivo_hwm) := dd;
+        jogosDispositivo_j_arr(jogosDispositivo_hwm) := jj
+    END;
+
+    desinstalar_jogo(dd, jj) =
+    VAR idx, ii IN
+        idx := 0; ii := 1;
+        WHILE ii <= jogosDispositivo_hwm & idx = 0 DO
+            IF jogosDispositivo_d_arr(ii) = dd & jogosDispositivo_j_arr(ii) = jj THEN
+                idx := ii
+            END;
+            ii := ii + 1
+        INVARIANT ii : 1..jogosDispositivo_hwm+1 & idx : 0..jogosDispositivo_hwm
+        VARIANT jogosDispositivo_hwm - ii + 1
+        END;
+        jogosDispositivo_d_arr(idx) := jogosDispositivo_d_arr(jogosDispositivo_hwm);
+        jogosDispositivo_j_arr(idx) := jogosDispositivo_j_arr(jogosDispositivo_hwm);
+        jogosDispositivo_hwm := jogosDispositivo_hwm - 1
+    END;
+
+    set_status_dispositivo(dd, ss) =
+    VAR idx, ii IN
+        idx := 0; ii := 1;
+        WHILE ii <= dispositivos_hwm & idx = 0 DO
+            IF dispositivos_arr(ii) = dd THEN idx := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..dispositivos_hwm + 1 & idx : 0..dispositivos_hwm
+        VARIANT dispositivos_hwm - ii + 1
+        END;
+        statusDispositivo_arr(idx) := ss
+    END;
+
+    add_cliente(cc) =
+    BEGIN
+        clientes_hwm := clientes_hwm + 1;
+        clientes_arr(clientes_hwm) := cc;
+        statusCliente_arr(clientes_hwm) := inativo;
+        creditosCliente_arr(clientes_hwm) := 0
+    END;
+
+    banir_cliente(cc) =
+    VAR idx, ii IN
+        idx := 0; ii := 1;
+        WHILE ii <= clientes_hwm & idx = 0 DO
+            IF clientes_arr(ii) = cc THEN idx := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..clientes_hwm + 1 & idx : 0..clientes_hwm
+        VARIANT clientes_hwm - ii + 1
+        END;
+        clientes_arr(idx) := clientes_arr(clientes_hwm);
+        statusCliente_arr(idx) := statusCliente_arr(clientes_hwm);
+        creditosCliente_arr(idx) := creditosCliente_arr(clientes_hwm);
+        clientes_hwm := clientes_hwm - 1
+    END;
+
+    comprar_creditos(cc, qtd) =
+    VAR idx, ii IN
+        idx := 0; ii := 1;
+        WHILE ii <= clientes_hwm & idx = 0 DO
+            IF clientes_arr(ii) = cc THEN idx := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..clientes_hwm + 1 & idx : 0..clientes_hwm
+        VARIANT clientes_hwm - ii + 1
+        END;
+        creditosCliente_arr(idx) := creditosCliente_arr(idx) + qtd
+    END;
+
+    tt <-- disp_disponiveis =
+    VAR ii, res IN
+        ii := 1; res := {};
+        WHILE ii <= dispositivos_hwm DO
+            IF statusDispositivo_arr(ii) = disponivel THEN
+                res := res \/ {dispositivos_arr(ii)}
+            END;
+            ii := ii + 1
+        INVARIANT ii : 1..dispositivos_hwm+1 & res <: dispositivos
+        VARIANT dispositivos_hwm - ii + 1
+        END;
+        tt := res
+    END;
+
+    tt <-- jogos_por_tipo(td) = 
+    VAR ii, res IN
+        ii := 1; res := {};
+        WHILE ii <= jogos_hwm DO
+            IF tipoJogo_arr(ii) = td THEN
+                res := res \/ {jogos_arr(ii)}
+            END;
+            ii := ii + 1
+        INVARIANT ii : 1..jogos_hwm+1 & res <: jogos
+        VARIANT jogos_hwm - ii + 1
+        END;
+        tt := res
+    END;
+
+    tt <-- jogos_dispositivo(dd) = 
+    VAR ii, res IN
+        ii := 1; res := {};
+        WHILE ii <= jogosDispositivo_hwm DO
+            IF jogosDispositivo_d_arr(ii) = dd THEN
+                res := res \/ {jogosDispositivo_j_arr(ii)}
+            END;
+            ii := ii + 1
+        INVARIANT ii : 1..jogosDispositivo_hwm+1 & res <: jogos
+        VARIANT jogosDispositivo_hwm - ii + 1
+        END;
+        tt := res
+    END;
+
+    tt <-- clientes_info =
+    VAR ii, res IN
+        ii := 1; res := {};
+        WHILE ii <= clientes_hwm DO
+            res := res \/ {clientes_arr(ii) |-> statusCliente_arr(ii) |-> creditosCliente_arr(ii)};
+            ii := ii + 1
+        INVARIANT ii : 1..clientes_hwm+1 & res <: (CLIENTES * STATUS_CLIENTE * NAT)
+        VARIANT clientes_hwm - ii + 1
+        END;
+        tt := res
+    END;
+
+    pp <-- posicao_fila(cc, dd) =
+    VAR ii, pos, achou IN
+        ii := 1; pos := 0; achou := FALSE;
+        WHILE ii <= fila_hwm & achou = FALSE DO
+            IF fila_d_arr(ii) = dd THEN
+                pos := pos + 1;
+                IF fila_c_arr(ii) = cc THEN
+                    achou := TRUE
+                END
+            END;
+            ii := ii + 1
+        INVARIANT ii : 1..fila_hwm+1 & pos : NAT & achou : BOOL
+        VARIANT fila_hwm - ii + 1
+        END;
+        pp := pos
+    END;
+
+    entrar_fila_dispositivo(cc, dd, jj) =
+    VAR idx, ii IN
+        idx := 0; ii := 1;
+        WHILE ii <= clientes_hwm & idx = 0 DO
+            IF clientes_arr(ii) = cc THEN idx := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..clientes_hwm + 1 & idx : 0..clientes_hwm
+        VARIANT clientes_hwm - ii + 1
+        END;
+        fila_hwm := fila_hwm + 1;
+        fila_d_arr(fila_hwm) := dd;
+        fila_c_arr(fila_hwm) := cc;
+        fila_j_arr(fila_hwm) := jj;
+        statusCliente_arr(idx) := em_espera
+    END;
+
+    sair_fila_dispositivo(cc, dd) =
+    VAR idx_fila, idx_cliente, ii IN
+        /* Encontra o cliente na fila e remove-o */
+        idx_fila := 0; ii := 1;
+        WHILE ii <= fila_hwm & idx_fila = 0 DO
+            IF fila_c_arr(ii) = cc & fila_d_arr(ii) = dd THEN
+                idx_fila := ii
+            END;
+            ii := ii + 1
+        INVARIANT ii : 1..fila_hwm+1 & idx_fila : 0..fila_hwm
+        VARIANT fila_hwm - ii + 1
+        END;
+        fila_d_arr(idx_fila) := fila_d_arr(fila_hwm);
+        fila_c_arr(idx_fila) := fila_c_arr(fila_hwm);
+        fila_j_arr(idx_fila) := fila_j_arr(fila_hwm);
+        fila_hwm := fila_hwm - 1;
+
+        /* Encontra o cliente na lista principal para atualizar o status */
+        idx_cliente := 0; ii := 1;
+        WHILE ii <= clientes_hwm & idx_cliente = 0 DO
+            IF clientes_arr(ii) = cc THEN idx_cliente := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..clientes_hwm + 1 & idx_cliente : 0..clientes_hwm
+        VARIANT clientes_hwm - ii + 1
+        END;
+        statusCliente_arr(idx_cliente) := inativo
+    END;
+
+    iniciar_sessao_fila(dd) =
+    VAR cc, jj, idx_fila, ii, achou, idx_cliente, idx_dispositivo IN
+        /* 1. Encontra a primeira entrada na fila para o dispositivo dd */
+        achou := FALSE; ii := 1; idx_fila := 0;
+        WHILE ii <= fila_hwm & achou = FALSE DO
+            IF fila_d_arr(ii) = dd THEN
+                idx_fila := ii;
+                achou := TRUE
+            END;
+            ii := ii + 1
+        INVARIANT ii : 1..fila_hwm+1 & achou : BOOL & idx_fila : 0..fila_hwm
+        VARIANT fila_hwm - ii + 1
+        END;
+        cc := fila_c_arr(idx_fila);
+        jj := fila_j_arr(idx_fila);
+
+        /* 2. Remove da fila */
+        fila_d_arr(idx_fila) := fila_d_arr(fila_hwm);
+        fila_c_arr(idx_fila) := fila_c_arr(fila_hwm);
+        fila_j_arr(idx_fila) := fila_j_arr(fila_hwm);
+        fila_hwm := fila_hwm - 1;
+
+        /* 3. Adiciona à sessão */
+        sessao_hwm := sessao_hwm + 1;
+        sessao_c_arr(sessao_hwm) := cc;
+        sessao_d_arr(sessao_hwm) := dd;
+        sessao_j_arr(sessao_hwm) := jj;
+
+        /* 4. Atualiza status e créditos */
+        idx_cliente <-- find_cliente_idx(cc);
+        idx_dispositivo <-- find_dispositivo_idx(dd);
+        statusDispositivo_arr(idx_dispositivo) := em_uso;
+        statusCliente_arr(idx_cliente) := ativo;
+        creditosCliente_arr(idx_cliente) := creditosCliente_arr(idx_cliente) - 1
+    END;
+
+    encerrar_sessao(cc) =
+    VAR dd, idx_sessao, idx_cliente, idx_dispositivo, ii IN
+        /* Encontra a sessão e o dispositivo associado */
+        idx_sessao := 0; ii := 1;
+        WHILE ii <= sessao_hwm & idx_sessao = 0 DO
+            IF sessao_c_arr(ii) = cc THEN idx_sessao := ii END;
+            ii := ii + 1
+        INVARIANT ii : 1..sessao_hwm+1 & idx_sessao : 0..sessao_hwm
+        VARIANT sessao_hwm - ii + 1
+        END;
+        dd := sessao_d_arr(idx_sessao);
+        
+        /* Remove da sessão */
+        sessao_c_arr(idx_sessao) := sessao_c_arr(sessao_hwm);
+        sessao_d_arr(idx_sessao) := sessao_d_arr(sessao_hwm);
+        sessao_j_arr(idx_sessao) := sessao_j_arr(sessao_hwm);
+        sessao_hwm := sessao_hwm - 1;
+
+        /* Atualiza status */
+        idx_cliente <-- find_cliente_idx(cc);
+        idx_dispositivo <-- find_dispositivo_idx(dd);
+        statusDispositivo_arr(idx_dispositivo) := disponivel;
+        statusCliente_arr(idx_cliente) := inativo
+    END;
+
+    /* Implementação das operações locais (o 'como') */
+idx <-- find_cliente_idx(cc) =
+VAR ii IN
+idx := 0; ii := 1;
+WHILE ii <= clientes_hwm & idx = 0 DO
+IF clientes_arr(ii) = cc THEN idx := ii END;
+ii := ii + 1
+INVARIANT ii : 1..clientes_hwm + 1 & idx : 0..clientes_hwm
+VARIANT clientes_hwm - ii + 1
+END
+END;
+idx <-- find_dispositivo_idx(dd) =
+VAR ii IN
+idx := 0; ii := 1;
+WHILE ii <= dispositivos_hwm & idx = 0 DO
+IF dispositivos_arr(ii) = dd THEN idx := ii END;
+ii := ii + 1
+INVARIANT ii : 1..dispositivos_hwm + 1 & idx : 0..dispositivos_hwm
+VARIANT dispositivos_hwm - ii + 1
+END
+END;
+idx <-- find_fila_idx(cc, dd) =
+VAR ii IN
+idx := 0; ii := 1;
+WHILE ii <= fila_hwm & idx = 0 DO
+IF fila_c_arr(ii) = cc & fila_d_arr(ii) = dd THEN idx := ii END;
+ii := ii + 1
+INVARIANT ii : 1..fila_hwm+1 & idx : 0..fila_hwm
+VARIANT fila_hwm - ii + 1
+END
+END;
+idx <-- find_sessao_idx_by_client(cc) =
+VAR ii IN
+idx := 0; ii := 1;
+WHILE ii <= sessao_hwm & idx = 0 DO
+IF sessao_c_arr(ii) = cc THEN idx := ii END;
+ii := ii + 1
+INVARIANT ii : 1..sessao_hwm+1 & idx : 0..sessao_hwm
+VARIANT sessao_hwm - ii + 1
+END
+END;
+
+   
+   ok <-- pre_add_tipo_dispositivo(td) = skip;
+    
+    ok <-- pre_remove_tipo_dispositivo(td) = skip;
+    
+    ok <-- pre_add_dispositivo(dd, td) = skip;
+
+    ok <-- pre_remove_dispositivo(dd) = skip;
+        
+    ok <-- pre_add_jogo(jj, td) = skip;
+    
+    ok <-- pre_remover_jogo(jj) = skip;
+    
+    ok <-- pre_instalar_jogo(dd, jj) = skip;
+    
+    ok <-- pre_desinstalar_jogo(dd, jj) = skip;
+    
+    ok <-- pre_banir_cliente(cc) = skip;
+    
+    ok <-- pre_comprar_creditos(cc, qtd) = skip;
+    
+    ok <-- pre_set_status_dispositivo(dd, ss) = skip;
+        
+    ok <-- pre_add_cliente(cc) = skip;
+        
+    ok <-- pre_entrar_fila_dispositivo(cc, dd, jj) = skip;
+    
+    ok <-- pre_sair_fila_dispositivo(cc, dd) = skip;
+    
+    ok <-- pre_iniciar_sessao(dd) = skip;
+        
+    ok <-- pre_encerrar_sessao(cc) = skip
+
+END

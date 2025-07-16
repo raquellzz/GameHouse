@@ -32,7 +32,8 @@ INVARIANT
     
     & clientes <: CLIENTES 
     & statusCliente : clientes --> STATUS_CLIENTE
-    & creditosCliente : clientes --> NAT 
+    & creditosCliente : clientes --> NAT
+    & creditosCliente : FIN(creditosCliente)
     
     & sessao : clientes >+> dispositivos 
     & jogoAtual : sessao --> jogos 
@@ -219,10 +220,10 @@ OPERATIONS
     comprar_creditos(cc, qtd) =
         PRE
             cc : CLIENTES &
-            qtd : 1..3 &
-            creditosCliente(cc) + qtd <= MAX_CREDITOS
+            qtd : 1..3 
         THEN
-            IF cc : clientes
+            IF cc : clientes &
+            creditosCliente(cc) + qtd <= MAX_CREDITOS
             THEN
             creditosCliente(cc) := creditosCliente(cc) + qtd
             END
@@ -467,14 +468,14 @@ OPERATIONS
             dd : DISPOSITIVOS &
             jj : JOGOS
         THEN    
-            IF dd |-> jj : jogosDispositivo &
-                statusCliente(cc) = inativo &
-                cc /: dom(sessao) &
-                !dd.(dd : dispositivos => cc /: ran(filaDispositivo(dd))) &
-                creditosCliente(cc) > 0 &
-                cc : clientes &
+            IF cc : clientes &
                 dd : dispositivos &
-                jj : jogos
+                jj : jogos  &
+                cc /: dom(sessao) &
+                dd |-> jj : jogosDispositivo &
+                statusCliente(cc) = inativo &
+                !dd.(dd : dispositivos => cc /: ran(filaDispositivo(dd))) &
+                creditosCliente(cc) > 0 
             THEN ok := TRUE
             ELSE ok := FALSE
             END
@@ -484,10 +485,10 @@ OPERATIONS
         PRE cc : CLIENTES &
             dd : DISPOSITIVOS
         THEN    
-            IF cc : ran(filaDispositivo(dd)) &
-                statusCliente(cc) = em_espera &
-                cc : clientes &
-                dd : dispositivos
+            IF  cc : clientes &
+                dd : dispositivos &
+                cc : ran(filaDispositivo(dd)) &
+                statusCliente(cc) = em_espera
             THEN ok := TRUE
             ELSE ok := FALSE
             END

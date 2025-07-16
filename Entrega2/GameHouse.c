@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <limits.h>
 
-int get_integer_input(void);
 
 void clear_screen(void) {
 #ifdef _WIN32
@@ -536,19 +535,3 @@ int main(void) {
   return 0;
 }
 
-
-int get_integer_input(void) {
-    char buffer[100];
-    int value;
-
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
-        return -1; // Retorna um valor de erro se a leitura falhar
-    }
-
-    // Tenta converter o buffer para um inteiro. Se falhar, retorna um erro.
-    if (sscanf(buffer, "%d", &value) != 1) {
-        return INT_MAX; // Um valor especial para indicar erro de conversão
-    }
-
-    return value;
-}

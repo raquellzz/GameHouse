@@ -8,10 +8,10 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-/* TODO : #define GameHouse_ctx__DISPOSITIVOS__max */
-/* TODO : #define GameHouse_ctx__CLIENTES__max */
-/* TODO : #define GameHouse_ctx__TIPOS_DISPOSITIVO__max */
-/* TODO : #define GameHouse_ctx__JOGOS__max */
+#define GameHouse_ctx__DISPOSITIVOS__max GameHouse_ctx__MAX_DISPOSITIVOS
+#define GameHouse_ctx__CLIENTES__max GameHouse_ctx__MAX_CLIENTES
+#define GameHouse_ctx__TIPOS_DISPOSITIVO__max GameHouse_ctx__MAX_TIPOS_DISPOSITIVO
+#define GameHouse_ctx__JOGOS__max GameHouse_ctx__MAX_JOGOS
 /* Clause SETS */
 typedef int GameHouse_ctx__DISPOSITIVOS;
 typedef int GameHouse_ctx__CLIENTES;
@@ -36,24 +36,17 @@ typedef enum
 
 /* Clause CONCRETE_CONSTANTS */
 /* Basic constants */
-/* TO DO: #define GameHouse_ctx__MAX_DISPOSITIVOS */
-/* TO DO: #define GameHouse_ctx__MAX_CREDITOS */
-/* TO DO: #define GameHouse_ctx__MAX_TIPOS_DISPOSITIVO */
-/* TO DO: #define GameHouse_ctx__MAX_JOGOS */
-/* TO DO: #define GameHouse_ctx__MAX_CLIENTES */
-/* TO DO: #define GameHouse_ctx__MAX_JOGOS_POR_DISPOSITIVO */
-/* TO DO: #define GameHouse_ctx__MAX_SESSOES */
-/* TO DO: #define GameHouse_ctx__MAX_ENTRADAS_FILA */
+#define GameHouse_ctx__MAX_DISPOSITIVOS 12
+#define GameHouse_ctx__MAX_CREDITOS 3
+#define GameHouse_ctx__MAX_TIPOS_DISPOSITIVO 5
+#define GameHouse_ctx__MAX_JOGOS 35
+#define GameHouse_ctx__MAX_CLIENTES 30
+#define GameHouse_ctx__MAX_JOGOS_POR_DISPOSITIVO 5
+#define GameHouse_ctx__MAX_SESSOES 12
+#define GameHouse_ctx__MAX_ENTRADAS_FILA 7
 /* Array and record constants */
 
-#define GameHouse__MAX_DISPOSITIVOS 12
-#define GameHouse__MAX_CLIENTES 30
-#define GameHouse__MAX_CREDITOS 3
-#define GameHouse__MAX_JOGOS 35
-#define GameHouse__MAX_TIPOS_DISPOSITIVO 5
-#define GameHouse__MAX_JOGOS_POR_DISPOSITIVO 5
-#define GameHouse__MAX_SESSOES 12
-#define GameHouse__MAX_ENTRADAS_FILA 7
+
 
 
 

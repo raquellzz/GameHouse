@@ -1,6 +1,7 @@
 /* WARNING if type checker is not performed, translation could contain errors ! */
 
 #include "GameHouse.h"
+#include "GameHouse_aliases.h"
 
 /* Clause CONCRETE_CONSTANTS */
 /* Basic constants */

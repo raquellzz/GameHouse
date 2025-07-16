@@ -1,4 +1,4 @@
-IMPLEMENTATION GameHouse_imp
+IMPLEMENTATION GameHouse_i
     
 REFINES GameHouse
 
@@ -9,7 +9,11 @@ CONCRETE_CONSTANTS
     JOGOS_POR_DISPOSITIVO_UB,
     CLIENTES_UB,
     SESSOES_UB,
-    ENTRADAS_FILA_UB
+    ENTRADAS_FILA_UB,
+    dummyDisp,
+    dummyJogo,
+    dummyTipo,
+    dummyClient
     
 CONCRETE_VARIABLES
     tiposDispositivos_arr,
@@ -47,7 +51,6 @@ CONCRETE_VARIABLES
     clientes_info_iterator,
     tipos_disponiveis_iterator,
     devices_info_iterator
-    
 
 PROPERTIES
     
@@ -57,7 +60,33 @@ PROPERTIES
     JOGOS_POR_DISPOSITIVO_UB : NAT1 &   /* MAX_JOGOS_POR_DISPOSITIVO - 1 */
     CLIENTES_UB : NAT1 &               /* MAX_CLIENTES - 1 */
     SESSOES_UB : NAT1 &                /* MAX_SESSOES - 1 */
-    ENTRADAS_FILA_UB : NAT1           /* MAX_ENTRADAS_FILA - 1 */
+    ENTRADAS_FILA_UB : NAT1  &         /* MAX_ENTRADAS_FILA - 1 */
+    dummyDisp : DISPOSITIVOS &
+    dummyJogo : JOGOS &
+    dummyTipo : TIPOS_DISPOSITIVO &
+    dummyClient : CLIENTES
+
+VALUES
+    MAX_TIPOS_DISPOSITIVO = 5;
+    MAX_DISPOSITIVOS = 12;
+    MAX_JOGOS = 35;
+    MAX_CLIENTES = 30;
+    MAX_JOGOS_POR_DISPOSITIVO = 5;
+    MAX_SESSOES = 12;
+    MAX_ENTRADAS_FILA = 7;
+    MAX_CREDITOS = 3;
+    TIPOS_DISPOSITIVO = 1..MAX_TIPOS_DISPOSITIVO;
+    DISPOSITIVOS = 1..MAX_DISPOSITIVOS;
+    JOGOS = 1..MAX_JOGOS;
+    CLIENTES = 1..MAX_CLIENTES;
+    
+    TIPOS_DISPOSITIVO_UB = 4;       /* MAX_TIPOS_DISPOSITIVO - 1 */
+    DISPOSITIVOS_UB = 11;           /* MAX_DISPOSITIVOS - 1 */
+    JOGOS_UB = 34;                  /* MAX_JOGOS - 1 */
+    JOGOS_POR_DISPOSITIVO_UB = 4;   /* MAX_JOGOS_POR_DISPOSITIVO - 1 */
+    CLIENTES_UB = 29;               /* MAX_CLIENTES - 1 */
+    SESSOES_UB = 11;                /* MAX_SESSOES - 1 */
+    ENTRADAS_FILA_UB = 6
 
 INVARIANT
     disp_disponiveis_iterator : NAT &
@@ -117,7 +146,7 @@ INVARIANT
     tipoJogo = (((0..jogos_hwm-1 <| jogos_arr)~) ; (0..jogos_hwm-1 <| tipoJogo_arr)) &
     
     statusCliente = (((0..clientes_hwm-1 <| clientes_arr)~) ; (0..clientes_hwm-1 <| statusCliente_arr)) &
-    creditosCliente = (((0..clientes_hwm-1 <| creditosCliente_arr)~) ; (0..clientes_hwm-1 <| creditosCliente_arr)) &
+    creditosCliente = (((0..clientes_hwm-1 <| clientes_arr)~) ; (0..clientes_hwm-1 <| creditosCliente_arr)) &
     
     jogosDispositivo = {dd, jj | #ii.(ii : 0..jogosDispositivo_hwm-1 & 
                                   dd = jogosDispositivo_d_arr(ii) & 
@@ -146,27 +175,6 @@ INVARIANT
     }
 )
 
-VALUES
-    MAX_TIPOS_DISPOSITIVO = 5;
-    MAX_DISPOSITIVOS = 12;
-    MAX_JOGOS = 35;
-    MAX_CLIENTES = 30;
-    MAX_JOGOS_POR_DISPOSITIVO = 5;
-    MAX_SESSOES = 12;
-    MAX_ENTRADAS_FILA = 7;
-    MAX_CREDITOS = 3;
-    TIPOS_DISPOSITIVO = 1..MAX_TIPOS_DISPOSITIVO;
-    DISPOSITIVOS = 1..MAX_DISPOSITIVOS;
-    JOGOS = 1..MAX_JOGOS;
-    CLIENTES = 1..MAX_CLIENTES;
-    
-    TIPOS_DISPOSITIVO_UB = 4;       /* MAX_TIPOS_DISPOSITIVO - 1 */
-    DISPOSITIVOS_UB = 11;           /* MAX_DISPOSITIVOS - 1 */
-    JOGOS_UB = 34;                  /* MAX_JOGOS - 1 */
-    JOGOS_POR_DISPOSITIVO_UB = 4;   /* MAX_JOGOS_POR_DISPOSITIVO - 1 */
-    CLIENTES_UB = 29;               /* MAX_CLIENTES - 1 */
-    SESSOES_UB = 11;                /* MAX_SESSOES - 1 */
-    ENTRADAS_FILA_UB = 6
 
 INITIALISATION
     tiposDispositivos_hwm := 0;
@@ -177,23 +185,24 @@ INITIALISATION
     sessao_hwm := 0;
     fila_hwm := 0;
 
-    tiposDispositivos_arr := (0..TIPOS_DISPOSITIVO_UB) * {1};
-    dispositivos_arr      := (0..DISPOSITIVOS_UB) * {1};
-    tipoDispositivo_arr   := (0..DISPOSITIVOS_UB) * {1};
+    tiposDispositivos_arr := (0..TIPOS_DISPOSITIVO_UB) * {dummyTipo};
+    dispositivos_arr      := (0..DISPOSITIVOS_UB) * {dummyDisp};
+    tipoDispositivo_arr   := (0..DISPOSITIVOS_UB) * {dummyTipo};
     statusDispositivo_arr := (0..DISPOSITIVOS_UB) * {disponivel};
-    jogos_arr             := (0..JOGOS_UB) * {1};
-    tipoJogo_arr          := (0..JOGOS_UB) * {1};
-    jogosDispositivo_d_arr := (0..JOGOS_POR_DISPOSITIVO_UB) * {1};
-    jogosDispositivo_j_arr := (0..JOGOS_POR_DISPOSITIVO_UB) * {1};
-    clientes_arr          := (0..CLIENTES_UB) * {1};
+    jogos_arr             := (0..JOGOS_UB) * {dummyJogo};
+    tipoJogo_arr          := (0..JOGOS_UB) * {dummyTipo};
+    jogosDispositivo_d_arr := (0..JOGOS_POR_DISPOSITIVO_UB) * {dummyDisp};
+    jogosDispositivo_j_arr := (0..JOGOS_POR_DISPOSITIVO_UB) * {dummyJogo};
+    clientes_arr          := (0..CLIENTES_UB) * {dummyClient};
     statusCliente_arr     := (0..CLIENTES_UB) * {inativo};
     creditosCliente_arr   := (0..CLIENTES_UB) * {0};
-    sessao_c_arr          := (0..SESSOES_UB) * {1};
-    sessao_d_arr          := (0..SESSOES_UB) * {1};
-    sessao_j_arr          := (0..SESSOES_UB) * {1};
-    fila_d_arr            := (0..ENTRADAS_FILA_UB) * {1};
-    fila_c_arr            := (0..ENTRADAS_FILA_UB) * {1};
-    fila_j_arr            := (0..ENTRADAS_FILA_UB) * {1};
+    sessao_c_arr          := (0..SESSOES_UB) * {dummyClient};
+    sessao_d_arr          := (0..SESSOES_UB) * {dummyDisp};
+    sessao_j_arr          := (0..SESSOES_UB) * {dummyJogo};
+    fila_d_arr            := (0..ENTRADAS_FILA_UB) * {dummyDisp};
+    fila_c_arr            := (0..ENTRADAS_FILA_UB) * {dummyClient};
+    fila_j_arr            := (0..ENTRADAS_FILA_UB) * {dummyJogo};
+    
     disp_disponiveis_iterator := 0;
     jogos_por_tipo_iterator := 0;
     jogos_dispositivo_iterator := 0;
